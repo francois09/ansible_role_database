@@ -1,0 +1,13 @@
+---
+# Default do nothing
+database__install: False
+database__configure: False
+
+# defaults file for database
+database__default_packages:
+  - mariadb-server
+  - python3-pymysql
+
+database__conf:
+  db_user: "user"
+  db_password: "pass"

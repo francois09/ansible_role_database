@@ -1,0 +1,40 @@
+---
+- name: Database install packages
+  apt:
+    name: "{{ database__default_packages }}"
+    update_cache: yes
+    state: present
+  when: database__install
+
+- name: Activate network in database config file
+  lineinfile:
+    path: /etc/mysql/mariadb.cnf
+    regexp: "^# port = 3306"
+    line: "port = 3306"
+  notify: Restart mariadb service
+  when:
+    - database__install
+    - database__configure
+
+- name: Allow external network in database config file
+  lineinfile:
+    path: /etc/mysql/mariadb.conf.d/50-server.cnf
+    regexp: "^bind-address"
+    line: "bind-address = 0.0.0.0"
+  notify: Restart mariadb service
+  when:
+    - database__install
+    - database__configure
+
+- name: MySQL/MariaDB user admin create
+  mysql_user:
+    name: "{{ database__conf.db_user }}"
+    password: "{{ database__conf.db_password }}"
+    host: "%"
+    priv: "*.*:ALL,GRANT"
+    login_user: root
+    login_unix_socket: /run/mysqld/mysqld.sock
+  when:
+    - database__install
+    - database__configure
+
